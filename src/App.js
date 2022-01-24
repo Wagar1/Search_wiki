@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import ReactAutocomplete from 'react-autocomplete';
-import {useDebounce, useSearch} from "./hooks";
+import {useDebounce, useSearch, useSearchForm} from "./hooks";
 import Input from "./components/Input";
 
 const App = () => {
-    const [value, setValue] = useState('');
-    const {articles} = useSearch(useDebounce(value, 500));
+    const {searchValue, onSearchChange} = useSearchForm('');
+    const {articles} = useSearch(useDebounce(searchValue, 500));
 
     return (
         <ReactAutocomplete
@@ -14,13 +14,14 @@ const App = () => {
             inputProps={{placeholder: 'Input a search term: '}}
             //shouldItemRender={(item, value) => item.label.toLowerCase().indexOf(value.toLowerCase()) > -1}
             getItemValue={item => item.label}
-            renderMenu={(children, value, style)=>(
-                <div style={{...style}} className="input-suggestions">
-                    {children}
-                    <a href={`/search?query=${value}`} className="search-link">See all results</a>
-                </div>
+            renderMenu={(children, value, style)=> {
+                return articles && articles.length ?
+                    (<div style={{...style}} className="input-suggestions">
+                        {children}
+                        <a href={`/search?query=${value}`} className="search-link">See all results</a>
+                    </div>) : <></>
 
-            )}
+            }}
             renderItem={(item, highlighted) =>
                 <div
                     key={item.id}
@@ -29,9 +30,8 @@ const App = () => {
                     {item.label}
                 </div>
             }
-            value={value}
-            onChange={e => setValue( e.target.value )}
-            onSelect={value => setValue(value)}
+            value={searchValue}
+            onChange={onSearchChange}
         />
     )
 }
